@@ -1,6 +1,7 @@
 import gym
 from gym import error, spaces, utils
-from gym.utils import seeding
+from gym.utils import seeding, json_utils
+import numpy as np
 import lgsvl
 import os
 import random
@@ -31,8 +32,21 @@ class LgsvlEnv(gym.Env):
     self.seed = seeding.create_seed()
     random.seed(self.seed)
 
+    self.control = lgsvl.VehicleControl()
+
+    # continuous action space only containing the steering angle and throttle
+    self.action_space = spaces.Box(low = np.array([-1.0, 0.0]), high = np.array([1.0, 1.0]), dtype=np.float32)
+
+    self.observation_space = NotImplementedError
+
 
   def step(self, action):
+    jsonable = self.action_space.to_jsonable(action)
+    self.control.steering = jsonable[0]
+    self.control.throttle = jsonable[1]
+    # self.control.steering = json_utils.json_encode_np(action[0])
+    # self.control.throttle = json_utils.json_encode_np(action[1])
+    self.ego.apply_control(self.control, sticky=True)
     self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
 
   def reset(self):
@@ -128,3 +142,4 @@ class LgsvlEnv(gym.Env):
     Helper function for calculating Euclidean distance between two Vector objects.
     """
     return math.sqrt((position1.x - position2.x)**2 + (position1.y - position2.y)**2 + (position1.z - position2.z)**2)
+

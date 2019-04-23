@@ -50,6 +50,9 @@ class LgsvlEnv(gym.Env):
     self.env.stop()
 
   def _setup_ego(self, name = "XE_Rigged-lgsvl", spawn_index = 0, random_spawn = False):
+    """
+    Spawns ego vehicle at the specified (by default index 0) spawn point in the Unity scene.
+    """
     state = lgsvl.AgentState()
     if (random_spawn):
       state.transform = self.spawns[random.randint(0, len(self.spawns) - 1)]
@@ -61,8 +64,20 @@ class LgsvlEnv(gym.Env):
     self._occupied.append(state.transform.position)
 
 
-  def _setup_npc(self, npc_type = None, position = None, follow_lane = True, speed = None,
-    speed_upper = 25.0, speed_lower = 7.0, randomize = False, min_dist = 10.0, max_dist = 40.0):
+  def _setup_npc(self, npc_type = None, position = None, follow_lane = True,
+                 speed = None, speed_upper = 25.0, speed_lower = 7.0,
+                 randomize = False, min_dist = 10.0, max_dist = 40.0):
+    
+    """
+    Spawns an NPC vehicle of a specific type at a specific location with an
+    option to have it follow lane annotations in the Unity scene at a given
+    speed.
+
+    Not specifying any input results in a random selection of NPC type, a
+    random spawn location within the [min_dist, max_dist] range of the ego
+    vehicle, and a random speed selected within the [speed_lower, speed_upper]
+    range.
+    """
     
     npc_types = {"Sedan", "HatchBack", "SUV", "Jeep", "DeliveryTruck", "SchoolBus"}
     
@@ -109,4 +124,7 @@ class LgsvlEnv(gym.Env):
     self._occupied.append(position)
     
   def _proximity(self, position1, position2):
+    """
+    Helper function for calculating Euclidean distance between two Vector objects.
+    """
     return math.sqrt((position1.x - position2.x)**2 + (position1.y - position2.y)**2 + (position1.z - position2.z)**2)

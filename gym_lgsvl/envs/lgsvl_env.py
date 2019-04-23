@@ -33,7 +33,7 @@ class LgsvlEnv(gym.Env):
 
 
   def step(self, action):
-    self.env.run(time_limit = 0.1) # TODO: replace with single frame when API supports it
+    self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
 
   def reset(self):
     self.vehicles.clear()
@@ -49,7 +49,7 @@ class LgsvlEnv(gym.Env):
   def close(self):
     self.env.stop()
 
-  def _setup_ego(self, name = "XE_Rigged-apollo", spawn_index = 0, random_spawn = False):
+  def _setup_ego(self, name = "XE_Rigged-lgsvl", spawn_index = 0, random_spawn = False):
     state = lgsvl.AgentState()
     if (random_spawn):
       state.transform = self.spawns[random.randint(0, len(self.spawns) - 1)]

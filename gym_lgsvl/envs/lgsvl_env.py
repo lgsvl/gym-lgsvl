@@ -6,6 +6,7 @@ import lgsvl
 import os
 import random
 import math
+import cv2
 
 class LgsvlEnv(gym.Env):
   metadata = {'render.modes': ['human']}
@@ -36,7 +37,10 @@ class LgsvlEnv(gym.Env):
     # continuous action space only containing the steering angle and throttle
     self.action_space = spaces.Box(low = np.array([-1.0, -1.0]), high = np.array([1.0, 1.0]), dtype=np.float32)
 
-    self.observation_space = NotImplementedError
+    # only observation is the RGB image from the front facing camera.
+    height = 1920
+    width = 1080
+    self.observation_space = spaces.Box(0, 255, [height, width, 3])
 
     
   def step(self, action):
@@ -52,8 +56,12 @@ class LgsvlEnv(gym.Env):
       self.control.braking = abs(jsonable[1])
     self.ego.apply_control(self.control, sticky=True)
     self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
+    observation = self._get_observation()
+    reward = 0
+    done = False
+    info = None
 
-    return [None, None, False, None]
+    return observation, reward, done, info
 
   def reset(self):
     self.vehicles.clear()
@@ -88,6 +96,11 @@ class LgsvlEnv(gym.Env):
     self.ego = self.env.add_agent(name, lgsvl.AgentType.EGO, state)
     self.vehicles[self.ego] = "EGO"
     self._occupied.append(state.transform.position)
+    self.sensors = self.ego.get_sensors()
+    for s in self.sensors:
+      if (s.name == "Main Camera"):
+        self.camera = s
+        break
 
 
   def _setup_npc(self, npc_type = None, position = None, follow_lane = True,
@@ -159,4 +172,13 @@ class LgsvlEnv(gym.Env):
     """
     return math.sqrt((position1.x - position2.x)**2 + (position1.y - position2.y)**2 + (position1.z - position2.z)**2)
 
+  def _get_observation(self):
+    """
+    Makes API call to simulator to capture a camera image, loads the
+    captured image from disk and returns it as an observation.
+    """
+    filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
+    self.camera.save(filename, quality = 75)
+    # TODO: check size
+    return cv2.imread(filename, 1)
 

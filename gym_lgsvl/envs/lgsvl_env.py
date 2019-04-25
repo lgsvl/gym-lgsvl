@@ -41,12 +41,18 @@ class LgsvlEnv(gym.Env):
     height = 1920
     width = 1080
     self.observation_space = spaces.Box(0, 255, [height, width, 3])
+    self.reward = 0
 
     
   def step(self, action):
+    """
+    Run one step of the simulation.
+    """
+    done = False
+    info = None
+
     jsonable = self.action_space.to_jsonable(action)
     self.control.steering = jsonable[0]
-
     # use positive values for throttle and negative values for braking
     if (jsonable[1] > 0):
       self.control.throttle = jsonable[1]
@@ -54,16 +60,25 @@ class LgsvlEnv(gym.Env):
     else:
       self.control.throttle = 0.0
       self.control.braking = abs(jsonable[1])
+
     self.ego.apply_control(self.control, sticky=True)
+    self.ego.on_collision(self._on_collision)
     self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
+
     observation = self._get_observation()
-    reward = 0
-    done = False
-    info = None
+
+    self._calculate_reward()
+    # TODO: consider including a discount factor    
+    reward = self.reward
 
     return observation, reward, done, info
 
+
   def reset(self):
+    """
+    Resets environment for a new episode.
+    """
+    self.reward = 0
     self.vehicles.clear()
     self._occupied.clear()
     self.spawns.clear()
@@ -77,11 +92,41 @@ class LgsvlEnv(gym.Env):
       self._setup_npc()
       count -= 1
 
+
+  def _on_collision(self, agent1, agent2, contact):
+    """
+    Collision callback -- results in a negative reward.
+    """
+    self.reward -= 200
+    name1 = self.vehicles[agent1]
+    name2 = self.vehicles[agent2] if agent2 is not None else "OBSTACLE"
+    print("{} collided with {} at {}".format(name1, name2, contact))
+
+
+  def _calculate_reward(self, mult = 1.0):
+    """
+    Reward is calculated based on distance travelled.
+    """
+    self.reward += mult * self._distance_travelled()
+
+
+  def _distance_travelled(self):
+    """
+    Helper function to calculate the distance travelled by the ego
+    vehicle. Makes an API call for position at each step.
+    """
+    last_pos = self.ego_position
+    self.ego_position = self.ego.transform.position
+    return self._proximity(last_pos, self.ego_position)
+    
+
   def render(self, mode='human'):
     pass
-  
+
+
   def close(self):
     self.env.stop()
+
 
   def _setup_ego(self, name = "XE_Rigged-lgsvl", spawn_index = 0, random_spawn = False):
     """
@@ -101,6 +146,7 @@ class LgsvlEnv(gym.Env):
       if (s.name == "Main Camera"):
         self.camera = s
         break
+    self.ego_position = state.transform.position
 
 
   def _setup_npc(self, npc_type = None, position = None, follow_lane = True,
@@ -162,15 +208,18 @@ class LgsvlEnv(gym.Env):
     self.vehicles[n] = npc_type
     self._occupied.append(position)
   
+
   def _setup_pedestrian(self):
     # Spawn pedestrians randomly on sidewalk near ego vehicle
     NotImplementedError
+
 
   def _proximity(self, position1, position2):
     """
     Helper function for calculating Euclidean distance between two Vector objects.
     """
     return math.sqrt((position1.x - position2.x)**2 + (position1.y - position2.y)**2 + (position1.z - position2.z)**2)
+
 
   def _get_observation(self):
     """

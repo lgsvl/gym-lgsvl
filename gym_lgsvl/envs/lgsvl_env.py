@@ -10,9 +10,8 @@ import math
 class LgsvlEnv(gym.Env):
   metadata = {'render.modes': ['human']}
 
-  def __init__(self):
+  def __init__(self, scene = "SanFrancisco", port = 8181):
     # Loading the SanFrancisco scene by default
-    scene = "SanFrancisco"
     self.env = lgsvl.Simulator(os.environ.get("SIMULATOR_HOST", "127.0.0.1"), 8181)
     if self.env.current_scene == scene:
       self.env.reset()
@@ -39,7 +38,7 @@ class LgsvlEnv(gym.Env):
 
     self.observation_space = NotImplementedError
 
-
+    
   def step(self, action):
     jsonable = self.action_space.to_jsonable(action)
     self.control.steering = jsonable[0]
@@ -54,6 +53,8 @@ class LgsvlEnv(gym.Env):
     self.ego.apply_control(self.control, sticky=True)
     self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
 
+    return [None, None, False, None]
+
   def reset(self):
     self.vehicles.clear()
     self._occupied.clear()
@@ -61,6 +62,12 @@ class LgsvlEnv(gym.Env):
     self.env.reset()
     self.seed = seeding.create_seed()
     random.seed(self.seed)
+    self.spawns = self.env.get_spawn()
+    self._setup_ego()
+    count = random.randint(1,10)
+    while count > 0:
+      self._setup_npc()
+      count -= 1
 
   def render(self, mode='human'):
     pass

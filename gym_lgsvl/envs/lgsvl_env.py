@@ -29,27 +29,29 @@ class LgsvlEnv(gym.Env):
     self._occupied = list()
 
     # Random seed used for all random generations
-    self.seed = seeding.create_seed()
-    random.seed(self.seed)
+    # self.seed = seeding.create_seed()
+    # random.seed(self.seed)
 
     self.control = lgsvl.VehicleControl()
 
     # continuous action space only containing the steering angle and throttle
-    self.action_space = spaces.Box(low = np.array([-1.0, -1.0]), high = np.array([1.0, 1.0]), dtype=np.float32)
+    self.action_space = spaces.Box( np.array([-1,-1]), np.array([+1,+1,]), dtype=np.float32)  # steer, gas(+) / brake(-)
 
     # only observation is the RGB image from the front facing camera.
     height = 1920
     width = 1080
-    self.observation_space = spaces.Box(0, 255, [height, width, 3])
+    self.observation_space = spaces.Box(low=0, high=255, shape=(height, width, 3), dtype=np.uint8)
     self.reward = 0
+    self.done = False
 
     
   def step(self, action):
     """
     Run one step of the simulation.
     """
-    done = False
-    info = None
+    self.done = False
+    info = {}
+    prev_reward = self.reward
 
     jsonable = self.action_space.to_jsonable(action)
     self.control.steering = jsonable[0]
@@ -68,10 +70,9 @@ class LgsvlEnv(gym.Env):
     observation = self._get_observation()
 
     self._calculate_reward()
-    # TODO: consider including a discount factor    
-    reward = self.reward
+    step_reward = self.reward - prev_reward
 
-    return observation, reward, done, info
+    return observation, step_reward, self.done, info
 
 
   def reset(self):
@@ -83,7 +84,7 @@ class LgsvlEnv(gym.Env):
     self._occupied.clear()
     self.spawns.clear()
     self.env.reset()
-    self.seed = seeding.create_seed()
+    # self.seed = seeding.create_seed()
     random.seed(self.seed)
     self.spawns = self.env.get_spawn()
     self._setup_ego()
@@ -91,6 +92,8 @@ class LgsvlEnv(gym.Env):
     while count > 0:
       self._setup_npc()
       count -= 1
+    
+    return self._get_observation()
 
 
   def _on_collision(self, agent1, agent2, contact):
@@ -98,6 +101,7 @@ class LgsvlEnv(gym.Env):
     Collision callback -- results in a negative reward.
     """
     self.reward -= 200
+    self.done = True
     name1 = self.vehicles[agent1]
     name2 = self.vehicles[agent2] if agent2 is not None else "OBSTACLE"
     print("{} collided with {} at {}".format(name1, name2, contact))

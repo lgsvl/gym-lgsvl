@@ -7,5 +7,5 @@ register(
     'scene': 'SanFrancisco',
     'port': 8181,
   },
-  max_episode_steps=50,
+  max_episode_steps=100,
 )

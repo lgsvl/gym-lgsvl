@@ -38,9 +38,9 @@ class LgsvlEnv(gym.Env):
     self.action_space = spaces.Box( np.array([-1,-1]), np.array([+1,+1,]), dtype=np.float32)  # steer, gas(+) / brake(-)
 
     # only observation is the RGB image from the front facing camera.
-    height = 1920
-    width = 1080
-    self.observation_space = spaces.Box(low=0, high=255, shape=(height, width, 3), dtype=np.uint8)
+    self.height = 960
+    self.width = 540
+    self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width, 3), dtype=np.uint8)
     self.reward = 0
     self.done = False
 
@@ -233,5 +233,7 @@ class LgsvlEnv(gym.Env):
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
     # TODO: check size
-    return cv2.imread(filename, 1)
+    im = cv2.imread(filename, 1)
+    cv2.resize(im, (self.width, self.height))
+    return im
 

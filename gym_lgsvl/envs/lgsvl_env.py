@@ -11,7 +11,7 @@ import cv2
 class LgsvlEnv(gym.Env):
   metadata = {'render.modes': ['human']}
 
-  def __init__(self, scene = "SanFrancisco", port = 8181):
+  def __init__(self, scene = "SanFrancisco", port = 8181, img_h = 960, img_w = 540):
     # Loading the SanFrancisco scene by default
     self.env = lgsvl.Simulator(os.environ.get("SIMULATOR_HOST", "127.0.0.1"), 8181)
     if self.env.current_scene == scene:
@@ -19,28 +19,28 @@ class LgsvlEnv(gym.Env):
     else:
       self.env.load(scene)
 
-    # List of spawn points in the scene
     self.spawns = self.env.get_spawn()
-
-    # List of all vehicle names available
     self.vehicles = dict()
-
-    # A list of all occupied coordinates (at spawn time)
     self._occupied = list()
-
-    # Random seed used for all random generations
     # self.seed = seeding.create_seed()
     # random.seed(self.seed)
-
     self.control = lgsvl.VehicleControl()
+    self.height = img_h
+    self.width = img_w
+    
+    self.action_space = spaces.Box(
+      np.array([-1,-1]),
+      np.array([+1,+1,]),
+      dtype=np.float32
+    )  # steer, gas(+) / brake(-)
 
-    # continuous action space only containing the steering angle and throttle
-    self.action_space = spaces.Box( np.array([-1,-1]), np.array([+1,+1,]), dtype=np.float32)  # steer, gas(+) / brake(-)
+    self.observation_space = spaces.Box(
+      low=0,
+      high=255,
+      shape=(img_h, img_w, 3),
+      dtype=np.uint8
+    ) # RGB image from front camera
 
-    # only observation is the RGB image from the front facing camera.
-    self.height = 960
-    self.width = 540
-    self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width, 3), dtype=np.uint8)
     self.reward = 0
     self.done = False
 
@@ -55,7 +55,7 @@ class LgsvlEnv(gym.Env):
 
     jsonable = self.action_space.to_jsonable(action)
     self.control.steering = jsonable[0]
-    # use positive values for throttle and negative values for braking
+
     if (jsonable[1] > 0):
       self.control.throttle = jsonable[1]
       self.control.braking = 0.0
@@ -65,7 +65,7 @@ class LgsvlEnv(gym.Env):
 
     self.ego.apply_control(self.control, sticky=True)
     self.ego.on_collision(self._on_collision)
-    self.env.run(time_limit = 0.1) # TODO: replace with single frame whenever API supports it
+    self.env.run(time_limit = 0.1)
 
     observation = self._get_observation()
 
@@ -232,7 +232,6 @@ class LgsvlEnv(gym.Env):
     """
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
-    # TODO: check size
     im = cv2.imread(filename, 1)
     cv2.resize(im, (self.width, self.height))
     return im

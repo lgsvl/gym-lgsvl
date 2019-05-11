@@ -8,16 +8,36 @@ import random
 import math
 import cv2
 
+CONFIG = {
+"scene": "SanFrancisco",
+"port" : 8181,
+
+"action_space" :
+  spaces.Box(
+    np.array([-1,-1]), 
+    np.array([+1,+1,]),
+    dtype=np.float32,
+  ),
+
+"observation_space" : 
+  spaces.Box(
+      low=0,
+      high=255,
+      shape=(960, 540, 3),
+      dtype=np.uint8
+    ) # RGB image from front camera
+}
+
 class LgsvlEnv(gym.Env):
   metadata = {'render.modes': ['human']}
 
-  def __init__(self, scene = "SanFrancisco", port = 8181, img_h = 960, img_w = 540):
-    # Loading the SanFrancisco scene by default
-    self.env = lgsvl.Simulator(os.environ.get("SIMULATOR_HOST", "127.0.0.1"), 8181)
-    if self.env.current_scene == scene:
+  def __init__(self, config=CONFIG):
+
+    self.env = lgsvl.Simulator(os.environ.get("SIMULATOR_HOST", "127.0.0.1"), config["port"])
+    if self.env.current_scene == config["scene"]:
       self.env.reset()
     else:
-      self.env.load(scene)
+      self.env.load(config["scene"])
 
     self.spawns = self.env.get_spawn()
     self.vehicles = dict()
@@ -25,26 +45,17 @@ class LgsvlEnv(gym.Env):
     # self.seed = seeding.create_seed()
     # random.seed(self.seed)
     self.control = lgsvl.VehicleControl()
-    self.height = img_h
-    self.width = img_w
-    
-    self.action_space = spaces.Box(
-      np.array([-1,-1]),
-      np.array([+1,+1,]),
-      dtype=np.float32
-    )  # steer, gas(+) / brake(-)
 
-    self.observation_space = spaces.Box(
-      low=0,
-      high=255,
-      shape=(img_h, img_w, 3),
-      dtype=np.uint8
-    ) # RGB image from front camera
+    self.action_space = config["action_space"]
+    self.observation_space = config["observation_space"]
+
+    self.width = self.observation_space.shape[0]
+    self.height = self.observation_space.shape[1]
 
     self.reward = 0
     self.done = False
 
-    
+
   def step(self, action):
     """
     Run one step of the simulation.
@@ -233,6 +244,7 @@ class LgsvlEnv(gym.Env):
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
     im = cv2.imread(filename, 1)
-    cv2.resize(im, (self.width, self.height))
-    return im
+    
+    return cv2.resize(im, (self.width, self.height))
+    
 

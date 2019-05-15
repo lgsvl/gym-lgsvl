@@ -17,7 +17,7 @@ CONFIG = {
     np.array([-1,-1]), 
     np.array([+1,+1,]),
     dtype=np.float32,
-  ),
+  ), # throttle (+) / brake (-)
 
 "observation_space" : 
   spaces.Box(
@@ -42,8 +42,7 @@ class LgsvlEnv(gym.Env):
     self.spawns = self.env.get_spawn()
     self.vehicles = dict()
     self._occupied = list()
-    # self.seed = seeding.create_seed()
-    # random.seed(self.seed)
+    self.seed()
     self.control = lgsvl.VehicleControl()
 
     self.action_space = config["action_space"]
@@ -54,6 +53,11 @@ class LgsvlEnv(gym.Env):
 
     self.reward = 0
     self.done = False
+
+
+  def seed(self, seed=None):
+    self.np_random, seed = seeding.np_random(seed)
+    return [seed]
 
 
   def step(self, action):
@@ -95,8 +99,6 @@ class LgsvlEnv(gym.Env):
     self._occupied.clear()
     self.spawns.clear()
     self.env.reset()
-    # self.seed = seeding.create_seed()
-    random.seed(self.seed)
     self.spawns = self.env.get_spawn()
     self._setup_ego()
     count = random.randint(1,10)
@@ -244,7 +246,10 @@ class LgsvlEnv(gym.Env):
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
     im = cv2.imread(filename, 1)
-    
-    return cv2.resize(im, (self.width, self.height))
+    im = cv2.resize(im, (self.width, self.height))
+    im = im.astype(np.float32)
+    im /= 255.0
+
+    return im
     
 

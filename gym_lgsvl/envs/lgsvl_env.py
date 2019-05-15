@@ -23,7 +23,7 @@ CONFIG = {
   spaces.Box(
       low=0,
       high=255,
-      shape=(960, 540, 3),
+      shape=(540, 960, 3),
       dtype=np.uint8
     ) # RGB image from front camera
 }
@@ -67,7 +67,7 @@ class LgsvlEnv(gym.Env):
     self.done = False
     info = {}
     prev_reward = self.reward
-
+    
     jsonable = self.action_space.to_jsonable(action)
     self.control.steering = jsonable[0]
 
@@ -77,6 +77,7 @@ class LgsvlEnv(gym.Env):
     else:
       self.control.throttle = 0.0
       self.control.braking = abs(jsonable[1])
+
 
     self.ego.apply_control(self.control, sticky=True)
     self.ego.on_collision(self._on_collision)
@@ -246,7 +247,7 @@ class LgsvlEnv(gym.Env):
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
     im = cv2.imread(filename, 1)
-    im = cv2.resize(im, (self.width, self.height))
+    im = cv2.resize(im, (self.height, self.width))
     im = im.astype(np.float32)
     im /= 255.0
 

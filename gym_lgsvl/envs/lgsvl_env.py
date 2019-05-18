@@ -23,7 +23,7 @@ CONFIG = {
   spaces.Box(
       low=0,
       high=255,
-      shape=(540, 960, 3),
+      shape=(297, 528, 3),
       dtype=np.uint8
     ) # RGB image from front camera
 }
@@ -48,8 +48,8 @@ class LgsvlEnv(gym.Env):
     self.action_space = config["action_space"]
     self.observation_space = config["observation_space"]
 
-    self.width = self.observation_space.shape[0]
-    self.height = self.observation_space.shape[1]
+    self.width = self.observation_space.shape[1]
+    self.height = self.observation_space.shape[0]
 
     self.reward = 0
     self.done = False
@@ -114,7 +114,7 @@ class LgsvlEnv(gym.Env):
     """
     Collision callback -- results in a negative reward.
     """
-    self.reward -= 200
+    self.reward -= 50
     self.done = True
     name1 = self.vehicles[agent1]
     name2 = self.vehicles[agent2] if agent2 is not None else "OBSTACLE"
@@ -247,7 +247,7 @@ class LgsvlEnv(gym.Env):
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)
     im = cv2.imread(filename, 1)
-    im = cv2.resize(im, (self.height, self.width))
+    im = cv2.resize(im, (self.width, self.height))
     im = im.astype(np.float32)
     im /= 255.0
 

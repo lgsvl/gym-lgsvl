@@ -225,11 +225,6 @@ class LgsvlEnv(gym.Env):
   
     self.vehicles[n] = npc_type
     self._occupied.append(position)
-  
-
-  def _setup_pedestrian(self):
-    # Spawn pedestrians randomly on sidewalk near ego vehicle
-    NotImplementedError
 
 
   def _proximity(self, position1, position2):
@@ -241,8 +236,8 @@ class LgsvlEnv(gym.Env):
 
   def _get_observation(self):
     """
-    Makes API call to simulator to capture a camera image, loads the
-    captured image from disk and returns it as an observation.
+    Makes API call to simulator to capture a camera image which is saved to disk,
+    loads the captured image from disk and returns it as an observation.
     """
     filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
     self.camera.save(filename, quality = 75)

@@ -47,9 +47,14 @@ The script named `random_agent.py` will launch a random agent which will sample 
 
 After a few seconds the `SanFrancisco` scene should load and spawn the ego vehicle along with some NPC vehicles. The ego vahicle will drive randomly.
 
+`gym_lgsvl` can be used with RL libraries that support openai gym environments. Below is an example of training using the A2C implementation from [baselines](https://github.com/openai/baselines):
+```
+python -m baselines.run --alg=a2c --env=gym_lgsvl:lgsvl-v0 --num_timesteps=1e5
+```
+
 
 ## Customizing the environment
-The specifics of the environment you will need will depend on the reinforcement learning problem you are trying to solve. By default, the `gym-lgsvl` environment has a simple setup. The vehicle uses a single front facing camera as observation and uses continuous control parameters for driving the vehicle. For more advanced state representations, modifications will be needed. The entire environment is defined in [lgsvl_env.py](/gym_lgsvl/envs/lgsvl_env.py).
+The specifics of the environment you will need will depend on the reinforcement learning problem you are trying to solve. By default, the `gym-lgsvl` environment has a simple setup intended to be a starting point for building more advanced problems. Training an agent with the default environment would be difficult without modiification. In the default configuration, the vehicle uses a single front facing camera as observation and uses continuous control parameters for driving the vehicle. For more advanced state representations, modifications will be needed. The entire environment is defined in [lgsvl_env.py](/gym_lgsvl/envs/lgsvl_env.py).
 
 ### CONFIG
 Some of the basic configuration are passed to the environment through `CONFIG`. `action_space` and `observation_space` definitions are required and are defined using `gym.spaces`.

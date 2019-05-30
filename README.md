@@ -1,6 +1,8 @@
-# gym-lgsvl
+# Reinforcement Learning with OpenAI Gym
 
-`gym-lgsvl` is an environment for interfacing with the [LGSVL Simulator](https://www.lgsvlsimulator.com) for use with the [openai gym](https://gym.openai.com) framework.
+[OpenAI Gym](https://gym.openai.com) is a toolkit for developing reinforcement learning algorithms. Gym provides a collection of test problems called environments which can be used to train an agent using a reinforcement learning. Each environment defines the reinforcement learnign problem the agent will try to solve.
+
+To facilitate developing reinforcement learning algorithms with the [LGSVL Simulator](https://www.lgsvlsimulator.com), we have developed `gym-lgsvl`, a custom environment that using the openai gym interface. `gym-lgsvl` can be used with general reinforcement learning algorithms implementations that are compatible with openai gym. Developers can modify the environment to define the specific reinforcement learning problem they are trying to solve.
 
 ## Requirements
 

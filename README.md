@@ -1,6 +1,6 @@
 # gym-lgsvl
 
-`gym-lgsvl` is an environment for interfacing with the [LGSVL Simulator](https://lgsvlsimulator.com) for use with the [openai gym](https://gym.openai.com) framework.
+`gym-lgsvl` is an environment for interfacing with the [LGSVL Simulator](https://www.lgsvlsimulator.com) for use with the [openai gym](https://gym.openai.com) framework.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ The script named `random_agent.py` will launch a random agent which will sample 
 ./random_agent.py
 ```
 
-After a few seconds the `SanFrancisco` scene should load and spawn the ego vehicle along with some NPC vehicles. The ego vahicle will drive randomly.
+After a few seconds the `SanFrancisco` scene should load and spawn the ego vehicle along with some NPC vehicles. The ego vehicle will drive randomly.
 
 `gym_lgsvl` can be used with RL libraries that support openai gym environments. Below is an example of training using the A2C implementation from [baselines](https://github.com/openai/baselines):
 ```
@@ -68,7 +68,7 @@ The default `action_space` is:
     dtype=np.float32,
   ),
 ```
-which defines a continuous action space defined as a 2-D array. The first element is the steering value and the second is braking/throttle (nagative values are braking and positive are throttle).
+which defines a continuous action space defined as a 2-D array. The first element is the steering value and the second is braking/throttle (negative values are braking and positive are throttle).
 
 The observation space is defined as a single camera image from the front camera using the Box space from gym:
 
@@ -82,7 +82,7 @@ The observation space is defined as a single camera image from the front camera 
     ) # RGB image from front camera
 ```
 
-The shape tuple specifies the image size. The simulator API will always sent 1920x1080 images. If any other size is used to define the observation space, the camera images will be resized to the specified size before being passed on as an observation.
+The shape tuple specifies the image size. The simulator API will always send 1920x1080 images. If any other size is used to define the observation space, the camera images will be resized to the specified size before being passed on as an observation.
 
 ### Reward calculation
 
@@ -90,9 +90,16 @@ The environment also calculates a reward function based on the distance travelle
 
 ### Sensors
 
-By defualt the ego vehicle will only use the fron facing camera. The ego vehicle is setup using `_setup_ego()`. Sensors are also defined here. To define more sensors, grab the sensor from the `sensors` list and invoke its specific methods to save data. To collect observations, `_get_observations()` is called.
+By default the ego vehicle will only use the front facing camera. The ego vehicle is setup using `_setup_ego()`. Sensors are also defined here. To define more sensors, grab the sensor from the `sensors` list and invoke its specific methods to save data. To collect observations, `_get_observations()` is called.
 
 
 ### NPC Behavior
 
 The NPCs are defined in `_setup_npc`. The NPCs are spawned randomly around the ego vehicle spawn point and will follow the lanes and traffic rules to move around.
+
+
+## Copyright and License
+
+Copyright (c) 2018 LG Electronics, Inc.
+
+This software contains code licensed as described in LICENSE.

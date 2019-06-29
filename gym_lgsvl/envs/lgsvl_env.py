@@ -239,7 +239,7 @@ class LgsvlEnv(gym.Env):
     Makes API call to simulator to capture a camera image which is saved to disk,
     loads the captured image from disk and returns it as an observation.
     """
-    filename = os.path.expanduser("~") + '/gym-lgsvl/tmp.jpg'
+    filename = os.path.dirname(os.path.realpath(__file__)) + '/../../tmp.jpg'
     self.camera.save(filename, quality = 75)
     im = cv2.imread(filename, 1)
     im = cv2.resize(im, (self.width, self.height))

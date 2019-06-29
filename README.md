@@ -12,6 +12,7 @@ To facilitate developing reinforcement learning algorithms with the [LGSVL Simul
 * openai gym
 * numpy
 * opencv
+* spinningup
 
 
 ## Setup
@@ -24,15 +25,22 @@ git clone https://github.com/lgsvl/simulator.git
 
 3. Install openai gym, numpy, and opencv:
 ```
-pip install --user gym, numpy, opencv-python
+pip install --user gym numpy opencv-python
 ```
 
-4. Clone this repository:
+4. Install spinning up:
+```
+git clone https://github.com/openai/spinningup.git
+cd spinningup
+pip install --user -e .
+```
+
+5. Clone this repository:
 ```
 git clone https://github.com/lgsvl/gym-lgsvl.git
 ```
 
-5. Install gym-lgsvl using pip:
+6. Install gym-lgsvl using pip:
 ```
 cd gym-lgsvl/
 pip install --user -e .

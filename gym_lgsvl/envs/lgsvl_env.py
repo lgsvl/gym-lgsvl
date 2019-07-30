@@ -9,7 +9,7 @@ import math
 import cv2
 
 CONFIG = {
-"scene": "SanFrancisco",
+"scene": "BorregasAve",
 "port" : 8181,
 
 "action_space" :
@@ -17,7 +17,7 @@ CONFIG = {
     np.array([-1,-1]), 
     np.array([+1,+1,]),
     dtype=np.float32,
-  ), # throttle (+) / brake (-)
+  ), # steering, throttle (+) / brake (-)
 
 "observation_space" : 
   spaces.Box(
@@ -81,7 +81,7 @@ class LgsvlEnv(gym.Env):
 
     self.ego.apply_control(self.control, sticky=True)
     self.ego.on_collision(self._on_collision)
-    self.env.run(time_limit = 0.1)
+    self.env.step(frames = 3, framerate = 10)
 
     observation = self._get_observation()
 
@@ -146,7 +146,7 @@ class LgsvlEnv(gym.Env):
     self.env.stop()
 
 
-  def _setup_ego(self, name = "XE_Rigged-lgsvl", spawn_index = 0, random_spawn = False):
+  def _setup_ego(self, name = "Lexus2016RXHybrid (Autoware)", spawn_index = 0, random_spawn = False):
     """
     Spawns ego vehicle at the specified (by default index 0) spawn point in the Unity scene.
     """
@@ -182,7 +182,7 @@ class LgsvlEnv(gym.Env):
     range.
     """
     
-    npc_types = {"Sedan", "HatchBack", "SUV", "Jeep", "DeliveryTruck", "SchoolBus"}
+    npc_types = {"Sedan", "Hatchback", "SUV", "Jeep", "BoxTruck", "SchoolBus"}
     
     if (not npc_type):
       npc_type = random.sample(npc_types, 1)[0]

@@ -80,8 +80,8 @@ class LgsvlEnv(gym.Env):
 
 
     self.ego.apply_control(self.control, sticky=True)
-    self.ego.on_comllision(self._on_collision)
-    self.env.run(time_limit = 0.1, framerate = 10)
+    self.ego.on_collision(self._on_collision)
+    self.env.run(time_limit = 0.1, time_scale = 3.0)
 
     observation = self._get_observation()
 
